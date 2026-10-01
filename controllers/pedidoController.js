@@ -15,7 +15,11 @@ const crearPedido = async (req, res) => {
     } = req.body;
 
     // Referencia al usuario
-    const usuarioRef = db.collection("usuarios").doc(usuarioId);
+   console.log("usuarioId recibido:", usuarioId);
+
+const usuarioRef = db.collection("Usuario").doc(usuarioId);
+
+console.log("Referencia:", usuarioRef.path);
 
     const pedido = {
       usuarioid: usuarioRef,
