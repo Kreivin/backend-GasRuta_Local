@@ -4,7 +4,6 @@ const { getAuth } = require("firebase-admin/auth");
 
 const serviceAccount = require("../serviceAccountKey.json");
 
-// Evitar inicializar Firebase más de una vez
 const app =
   getApps().length === 0
     ? initializeApp({
@@ -12,8 +11,12 @@ const app =
       })
     : getApps()[0];
 
-const db = getFirestore(app);
+// Tu base de la captura parece llamarse "default"
+const db = getFirestore(app, "default");
 const auth = getAuth(app);
+
+console.log("Proyecto:", serviceAccount.project_id);
+console.log('Base de Firestore utilizada: "default"');
 
 module.exports = {
   db,
