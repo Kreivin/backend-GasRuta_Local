@@ -47,6 +47,25 @@ app.get("/firebase-test", async (req, res) => {
 // Rutas usuarios
 app.use("/api/usuarios", usuarioRoutes);
 
+// Rutas pedidos
+const pedidoRoutes = require("./routes/pedidoRoutes");
+app.use("/api/pedidos", pedidoRoutes);
+
+
+// Rutas reseñas
+const resenaRoutes = require("./routes/resenaRoutes");
+app.use("/api/resenas", resenaRoutes);
+
+
+// Rutas de rutas
+const rutaRoutes = require("./routes/rutaRoutes");
+app.use("/api/rutas", rutaRoutes);
+
+// Rutas de incidencias
+const incidenciaRoutes = require("./routes/incidenciaRoutes");
+app.use("/api/incidencias", incidenciaRoutes);
+
+
 // Ruta 404
 app.use((req, res) => {
   res.status(404).json({

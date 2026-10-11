@@ -1,31 +1,34 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-  crearPedido,
-  obtenerPedidos,
-  obtenerPedido,
-  obtenerPedidosUsuario,
-  actualizarEstado,
-  eliminarPedido
-} = require("../controllers/pedidoController");
+const pedidoController = require("../controllers/pedidoController");
 
-// Obtener todos los pedidos
-router.get("/", obtenerPedidos);
-
-// Obtener pedidos de un usuario
-router.get("/usuario/:usuarioId", obtenerPedidosUsuario);
-
-// Obtener pedido por ID
-router.get("/:id", obtenerPedido);
 
 // Crear pedido
-router.post("/", crearPedido);
+router.post("/", pedidoController.crearPedido);
 
-// Actualizar estado
-router.put("/:id/estado", actualizarEstado);
+// Obtener todos los pedidos
+router.get("/", pedidoController.obtenerPedidos);
+
+// Obtener pedidos de un usuario
+router.get(
+  "/usuario/:usuarioId",
+  pedidoController.obtenerPedidosUsuario
+);
+
+// Actualizar solamente el estado
+router.patch(
+  "/:id/estado",
+  pedidoController.actualizarEstado
+);
+
+// Obtener un pedido por ID
+router.get("/:id", pedidoController.obtenerPedido);
+
+// Actualizar datos del pedido
+router.patch("/:id", pedidoController.actualizarPedido);
 
 // Eliminar pedido
-router.delete("/:id", eliminarPedido);
+router.delete("/:id", pedidoController.eliminarPedido);
 
 module.exports = router;
