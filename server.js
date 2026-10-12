@@ -65,6 +65,10 @@ app.use("/api/rutas", rutaRoutes);
 const incidenciaRoutes = require("./routes/incidenciaRoutes");
 app.use("/api/incidencias", incidenciaRoutes);
 
+// Rutas de historial
+const historialRoutes = require("./routes/historial.routes");
+app.use("/api/historial", historialRoutes);
+
 
 // Ruta 404
 app.use((req, res) => {
