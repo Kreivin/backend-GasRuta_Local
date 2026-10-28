@@ -9,7 +9,7 @@ const {
   obtenerResenasCliente,
   actualizarResena,
   eliminarResena,
-} = require("../controllers/resenaController");
+} = require("../controllers/resena.Controller");
 
 // Crear reseña
 router.post("/", crearResena);

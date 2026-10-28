@@ -10,7 +10,7 @@ const {
   actualizarHistorial,
   actualizarEstadoHistorial,
   eliminarHistorial,
-} = require("../controllers/historial.controllers");
+} = require("../controllers/historial.Controller");
 
 // Crear registro de historial
 router.post("/", crearHistorial);

@@ -1,25 +1,132 @@
-const { db } = require("../config/firebase");
+const { db, auth } = require("../config/firebase");
 
 // =========================
 // Crear usuario
 // =========================
 const crearUsuario = async (req, res) => {
-  try {
-    const resultado = await db.collection("Usuario").add(req.body);
+  let usuarioAuth = null;
 
-    res.status(201).json({
+  try {
+    const {
+      Nombre,
+      Correo,
+      Contraseña,
+      Telefono = "",
+      Direccion = "",
+      Rol = "Cliente",
+      Usuariokey = "",
+    } = req.body;
+
+    if (!Nombre || !Correo || !Contraseña) {
+      return res.status(400).json({
+        mensaje:
+          "Nombre, correo y contraseña son obligatorios",
+      });
+    }
+
+    if (Contraseña.length < 6) {
+      return res.status(400).json({
+        mensaje:
+          "La contraseña debe tener al menos 6 caracteres",
+      });
+    }
+
+    const rolesPermitidos = [
+      "Cliente",
+      "Repartidor",
+      "Administrador",
+    ];
+
+    if (!rolesPermitidos.includes(Rol)) {
+      return res.status(400).json({
+        mensaje: "El rol indicado no es válido",
+        rolesPermitidos,
+      });
+    }
+
+    const correoNormalizado = Correo
+      .trim()
+      .toLowerCase();
+
+    // Crear cuenta en Firebase Authentication
+    usuarioAuth = await auth.createUser({
+      email: correoNormalizado,
+      password: Contraseña,
+      displayName: Nombre.trim(),
+    });
+
+    // Asignar rol dentro del token
+    await auth.setCustomUserClaims(usuarioAuth.uid, {
+      rol: Rol,
+      admin: Rol === "Administrador",
+    });
+
+    // Guardar perfil en Firestore sin contraseña
+    const perfilUsuario = {
+      uid: usuarioAuth.uid,
+      Usuariokey:
+        Usuariokey || `US-${usuarioAuth.uid.slice(0, 6)}`,
+      Nombre: Nombre.trim(),
+      Correo: correoNormalizado,
+      Telefono: Telefono.trim(),
+      Direccion: Direccion.trim(),
+      Rol,
+      activo: true,
+      fechaCreacion: new Date(),
+    };
+
+    await db
+      .collection("Usuario")
+      .doc(usuarioAuth.uid)
+      .set(perfilUsuario);
+
+    return res.status(201).json({
       mensaje: "Usuario creado correctamente",
-      id: resultado.id,
+      id: usuarioAuth.uid,
+      usuario: perfilUsuario,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error al crear usuario:", error);
 
-    res.status(500).json({
+    // Si Authentication se creó pero Firestore falló,
+    // elimina la cuenta para evitar datos incompletos.
+    if (usuarioAuth?.uid) {
+      try {
+        await auth.deleteUser(usuarioAuth.uid);
+      } catch (errorEliminando) {
+        console.error(
+          "No se pudo revertir la cuenta:",
+          errorEliminando.message
+        );
+      }
+    }
+
+    if (error.code === "auth/email-already-exists") {
+      return res.status(409).json({
+        mensaje:
+          "Ya existe una cuenta con ese correo electrónico",
+      });
+    }
+
+    if (error.code === "auth/invalid-email") {
+      return res.status(400).json({
+        mensaje: "El correo electrónico no es válido",
+      });
+    }
+
+    if (error.code === "auth/invalid-password") {
+      return res.status(400).json({
+        mensaje:
+          "La contraseña debe tener al menos 6 caracteres",
+      });
+    }
+
+    return res.status(500).json({
+      mensaje: "No se pudo crear el usuario",
       error: error.message,
     });
   }
 };
-
 // =========================
 // Obtener usuarios
 // =========================

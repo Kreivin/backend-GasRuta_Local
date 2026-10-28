@@ -10,7 +10,7 @@ const {
   iniciarRuta,
   finalizarRuta,
   eliminarRuta,
-} = require("../controllers/rutaController");
+} = require("../controllers/ruta.Controller");
 
 // Crear ruta
 router.post("/", crearRuta);

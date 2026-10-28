@@ -1,9 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const { db } = require("./config/firebase.js");
 
-
-const usuarioRoutes = require("./routes/usuarioRoutes");
+const usuarioRoutes = require("./routes/usuario.Routes.js");
 
 const app = express();
 
@@ -47,26 +47,30 @@ app.get("/firebase-test", async (req, res) => {
 app.use("/api/usuarios", usuarioRoutes);
 
 // Rutas pedidos
-const pedidoRoutes = require("./routes/pedidoRoutes");
+const pedidoRoutes = require("./routes/pedido.Routes.js");
 app.use("/api/pedidos", pedidoRoutes);
 
 
 // Rutas reseñas
-const resenaRoutes = require("./routes/resenaRoutes");
+const resenaRoutes = require("./routes/resena.Routes.js");
 app.use("/api/resenas", resenaRoutes);
 
 
 // Rutas de rutas
-const rutaRoutes = require("./routes/rutaRoutes");
+const rutaRoutes = require("./routes/ruta.Routes.js");
 app.use("/api/rutas", rutaRoutes);
 
 // Rutas de incidencias
-const incidenciaRoutes = require("./routes/incidenciaRoutes");
+const incidenciaRoutes = require("./routes/incidencia.Routes.js");
 app.use("/api/incidencias", incidenciaRoutes);
 
 // Rutas de historial
 const historialRoutes = require("./routes/historial.routes");
 app.use("/api/historial", historialRoutes);
+
+// Rutas de autenticación
+const authRoutes = require("./routes/auth.Routes.js");
+app.use("/api/auth", authRoutes);
 
 
 // Ruta 404

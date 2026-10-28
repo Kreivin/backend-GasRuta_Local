@@ -7,7 +7,7 @@ const {
   obtenerUsuarioid,
   eliminarUsuario,
   actualizarUsuario,
-} = require("../controllers/usuarioController");
+} = require("../controllers/usuario.Controller.js");
 
 router.post("/", crearUsuario);
 router.get("/", obtenerUsuarios);

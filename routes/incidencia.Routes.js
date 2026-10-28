@@ -11,7 +11,7 @@ const {
   actualizarIncidencia,
   actualizarEstadoIncidencia,
   eliminarIncidencia,
-} = require("../controllers/incidenciaController");
+} = require("../controllers/incidencia.Controller");
 
 // Crear incidencia
 router.post("/", crearIncidencia);

@@ -1,27 +1,36 @@
-const { initializeApp, cert, getApps } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
-require("dotenv").config();
+const {
+  initializeApp,
+  cert,
+  getApps,
+} = require("firebase-admin/app");
 
-const projectId = process.env.FIREBASE_PROJECT_ID ? process.env.FIREBASE_PROJECT_ID.trim() : "";
-const clientEmail = process.env.FIREBASE_CLIENT_EMAIL ? process.env.FIREBASE_CLIENT_EMAIL.trim() : "";
-const privateKey = process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n").trim() : "";
+const {
+  getFirestore,
+} = require("firebase-admin/firestore");
 
-const serviceAccount = {
-  projectId,
-  clientEmail,
-  privateKey,
-};
+const {
+  getAuth,
+} = require("firebase-admin/auth");
 
-let app;
-if (!getApps().length) {
-  app = initializeApp({
-    credential: cert(serviceAccount),
-  });
-} else {
-  app = getApps()[0];
-}
+const serviceAccount = require(
+  "../serviceAccountKey.json"
+);
 
-// Nota: En este proyecto de Firebase la base de datos se llama 'default' (sin paréntesis)
+const app =
+  getApps().length === 0
+    ? initializeApp({
+        credential: cert(serviceAccount),
+      })
+    : getApps()[0];
+
+// Tu base se llama "default"
 const db = getFirestore(app, "default");
+const auth = getAuth(app);
 
-module.exports = { db, app };
+console.log("Proyecto:", serviceAccount.project_id);
+console.log('Base de Firestore utilizada: "default"');
+
+module.exports = {
+  db,
+  auth,
+};
