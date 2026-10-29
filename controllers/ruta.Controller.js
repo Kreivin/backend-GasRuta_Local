@@ -30,6 +30,17 @@ const formatearRuta = (documento) => {
     fecha_inicio: convertirFecha(datos.fecha_inicio),
     fecha_final: convertirFecha(datos.fecha_final),
     estado: datos.estado || "asignada",
+    ubicacion_actual: datos.ubicacion_actual
+      ? {
+          latitud: datos.ubicacion_actual.latitud,
+          longitud: datos.ubicacion_actual.longitud,
+          rumbo: datos.ubicacion_actual.rumbo || 0,
+          velocidad: datos.ubicacion_actual.velocidad || 0,
+          ultima_actualizacion: convertirFecha(
+            datos.ubicacion_actual.ultima_actualizacion
+          ),
+        }
+      : null,
     fechaActualizacion: convertirFecha(
       datos.fechaActualizacion
     ),
@@ -525,6 +536,128 @@ const eliminarRuta = async (req, res) => {
   }
 };
 
+// =========================
+// Actualizar ubicación del repartidor en tiempo real
+// =========================
+const actualizarUbicacionRuta = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { latitud, longitud, rumbo = 0, velocidad = 0 } = req.body;
+
+    if (latitud === undefined || longitud === undefined) {
+      return res.status(400).json({
+        mensaje: "latitud y longitud son obligatorias",
+      });
+    }
+
+    const latNum = Number(latitud);
+    const lngNum = Number(longitud);
+
+    if (Number.isNaN(latNum) || latNum < -90 || latNum > 90) {
+      return res.status(400).json({
+        mensaje: "Latitud inválida (debe estar entre -90 y 90)",
+      });
+    }
+
+    if (Number.isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
+      return res.status(400).json({
+        mensaje: "Longitud inválida (debe estar entre -180 y 180)",
+      });
+    }
+
+    const rutaRef = db.collection(COLECCION_RUTAS).doc(id);
+    const rutaDoc = await rutaRef.get();
+
+    if (!rutaDoc.exists) {
+      return res.status(404).json({
+        mensaje: "Ruta no encontrada",
+      });
+    }
+
+    const ahora = Timestamp.now();
+    const datosUbicacion = {
+      latitud: latNum,
+      longitud: lngNum,
+      rumbo: Number(rumbo) || 0,
+      velocidad: Number(velocidad) || 0,
+      ultima_actualizacion: ahora,
+    };
+
+    await rutaRef.update({
+      ubicacion_actual: datosUbicacion,
+      fechaActualizacion: ahora,
+    });
+
+    return res.status(200).json({
+      mensaje: "Ubicación de ruta actualizada correctamente",
+      rutaId: id,
+      ubicacion: {
+        latitud: latNum,
+        longitud: lngNum,
+        rumbo: Number(rumbo) || 0,
+        velocidad: Number(velocidad) || 0,
+        ultima_actualizacion: ahora.toDate().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error("Error al actualizar ubicación de ruta:", error);
+
+    return res.status(500).json({
+      mensaje: "No se pudo actualizar la ubicación",
+      error: error.message,
+    });
+  }
+};
+
+// =========================
+// Obtener ubicación del repartidor de una ruta
+// =========================
+const obtenerUbicacionRuta = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const rutaRef = db.collection(COLECCION_RUTAS).doc(id);
+    const rutaDoc = await rutaRef.get();
+
+    if (!rutaDoc.exists) {
+      return res.status(404).json({
+        mensaje: "Ruta no encontrada",
+      });
+    }
+
+    const datos = rutaDoc.data();
+    const ubicacion = datos.ubicacion_actual;
+
+    if (!ubicacion) {
+      return res.status(200).json({
+        mensaje: "La ruta no tiene coordenadas registradas aún",
+        rutaId: id,
+        estado: datos.estado || "asignada",
+        ubicacion: null,
+      });
+    }
+
+    return res.status(200).json({
+      rutaId: id,
+      estado: datos.estado || "asignada",
+      ubicacion: {
+        latitud: ubicacion.latitud,
+        longitud: ubicacion.longitud,
+        rumbo: ubicacion.rumbo || 0,
+        velocidad: ubicacion.velocidad || 0,
+        ultima_actualizacion: convertirFecha(ubicacion.ultima_actualizacion),
+      },
+    });
+  } catch (error) {
+    console.error("Error al obtener ubicación de ruta:", error);
+
+    return res.status(500).json({
+      mensaje: "No se pudo obtener la ubicación de la ruta",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   crearRuta,
   obtenerRutas,
@@ -534,4 +667,6 @@ module.exports = {
   iniciarRuta,
   finalizarRuta,
   eliminarRuta,
+  actualizarUbicacionRuta,
+  obtenerUbicacionRuta,
 };

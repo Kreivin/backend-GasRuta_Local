@@ -10,6 +10,8 @@ const {
   iniciarRuta,
   finalizarRuta,
   eliminarRuta,
+  actualizarUbicacionRuta,
+  obtenerUbicacionRuta,
 } = require("../controllers/ruta.Controller");
 
 // Crear ruta
@@ -24,6 +26,8 @@ router.get("/pedido/:pedidoId", obtenerRutaPedido);
 // Acciones específicas antes de /:id
 router.patch("/:id/iniciar", iniciarRuta);
 router.patch("/:id/finalizar", finalizarRuta);
+router.patch("/:id/ubicacion", actualizarUbicacionRuta);
+router.get("/:id/ubicacion", obtenerUbicacionRuta);
 
 // Operaciones por ID
 router.get("/:id", obtenerRuta);

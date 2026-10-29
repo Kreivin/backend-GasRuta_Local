@@ -12,9 +12,18 @@ const {
   getAuth,
 } = require("firebase-admin/auth");
 
-const serviceAccount = require(
-  "../serviceAccountKey.json"
-);
+require("dotenv").config();
+
+let serviceAccount;
+try {
+  serviceAccount = require("../serviceAccountKey.json");
+} catch (e) {
+  serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID?.trim(),
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL?.trim(),
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+  };
+}
 
 const app =
   getApps().length === 0
@@ -27,7 +36,7 @@ const app =
 const db = getFirestore(app, "default");
 const auth = getAuth(app);
 
-console.log("Proyecto:", serviceAccount.project_id);
+console.log("Proyecto:", serviceAccount.projectId || serviceAccount.project_id);
 console.log('Base de Firestore utilizada: "default"');
 
 module.exports = {
