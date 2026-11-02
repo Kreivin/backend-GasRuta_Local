@@ -5,10 +5,16 @@ const { db } = require("./config/firebase.js");
 
 const usuarioRoutes = require("./routes/usuario.Routes.js");
 
+const exportacionRoutes = require("./routes/exportacion.routes");
+
+
 const app = express();
+
 
 app.use(cors());
 app.use(express.json());
+
+app.use("/api/exportar", exportacionRoutes);
 
 // Ruta principal
 app.get("/", (req, res) => {
